@@ -1,0 +1,103 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "For a project that carries an Expo app (apps/mobile). Everything in the default preset, plus the rules the Expo SDK imposes. A web-only project extends the default preset instead.",
+    "The Expo SDK, and with it React Native, React and the react-native-* libraries, is bumped by hand: `pnpm add expo@<sdk>` in apps/mobile, then `pnpm exec expo install --fix` in apps/mobile, in one commit. Left to a bot, the first weekly run proposed SDK 58 router and constants packages next to SDK 57's expo, plus React 19.3 against React Native 0.86, and both gates went red."
+  ],
+  "extends": ["github>2Fivers/renovate-config"],
+  "packageRules": [
+    {
+      "description": "Patch releases inside the pinned SDK: the expo-* and @expo/* packages, and the react-native-* libraries the SDK pins with a `~` range, which tolerates them. WEEKLY AND AUTOMERGED, unlike the other runtime groups, because it keeps the app on the SDK's current fixes at no cost: the web image does not contain Expo, nothing reaches a phone without a mobile-v* tag, and check-mobile proves that the packages agree with the expo the same pull request brings. The exact-pinned names below never reach this group -- they are disabled -- and are listed anyway, so that an SDK bump, which lifts those rules for one commit, still reads as one family.",
+      "matchPackageNames": [
+        "expo",
+        "expo-*",
+        "@expo/*",
+        "react-native",
+        "react-native-*",
+        "@react-native/*",
+        "babel-preset-expo",
+        "@babel/core",
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "groupName": "expo"
+    },
+    {
+      "description": "The cadence and automerge for the group above, on patches only: anything else in the family is disabled below, waits on the dashboard as a major, or is lifted out by the expo-doctor rule that follows. A group merges itself only when EVERY update in it may (Renovate's generateBranchConfig: `automerge = upgrades.every(u => u.automerge)`), so a minor that still lands here -- an @babel/core 7.x minor, which the SDK's ^7.29.0 accepts -- holds the patches with it until a human merges the pull request.",
+      "matchPackageNames": [
+        "expo",
+        "expo-*",
+        "@expo/*",
+        "react-native",
+        "react-native-*",
+        "@react-native/*",
+        "babel-preset-expo",
+        "@babel/core",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "matchUpdateTypes": ["patch"],
+      "schedule": ["* * * * 1"],
+      "automerge": true
+    },
+    {
+      "description": "expo-doctor is a checker, not part of the SDK: it versions on its own (1.x, not 57.x), runs only in check-mobile and never ships, which is the default preset's definition of tooling. It matched expo-* above and so joined the expo group with every minor, and the patch-only automerge does not cover a minor -- one expo-doctor minor inside 'Update expo' would keep the whole group from merging itself. Here it joins the weekly, automerged tooling group instead. Its major stays disabled by the SDK rule below.",
+      "matchPackageNames": ["expo-doctor"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "tooling",
+      "schedule": ["* * * * 1"],
+      "automerge": true
+    },
+    {
+      "description": "The SDK and everything that versions with it: majors are the SDK bump itself. @babel/core is here because the SDK asks for ^7.29.0 and Babel 8 is a different plugin API that the Metro preset would not load; 7.x minors and patches satisfy the range and still flow.",
+      "matchPackageNames": ["expo", "expo-*", "@expo/*", "babel-preset-expo", "@babel/core"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "React Native and its libraries version in lockstep with the SDK, minors included (0.86 -> 0.87 is a minor and a different SDK).",
+      "matchPackageNames": ["react-native*", "@types/react", "@types/react-dom"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
+      "description": "NO update types, which disables every version of these outright. The SDK pins them to an EXACT version in expo/bundledNativeModules.json -- `19.2.3`, not `~19.2.3` -- and expo-doctor, which is the whole of check-mobile, fails on any difference from an exact pin, a patch included. @react-native/* carries react-native's own version number, so it is frozen with a react-native nothing else can move; expo-doctor does not check it, so a patch ahead of the runtime would pass the gate and still be wrong. This is SDK 57's exact-pinned set; re-read it after an SDK bump with: node -e \"const m=require('expo/bundledNativeModules.json'), d=require('./apps/mobile/package.json').dependencies; for (const k of Object.keys(d)) if (/^[0-9]/.test(m[k] ?? '')) console.log(k)\". A name that belongs here and is missing ships nothing bad -- it opens a pull request that fails check-mobile until someone adds it.",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "react-native",
+        "react-native-reanimated",
+        "react-native-svg",
+        "react-native-worklets",
+        "@react-native-async-storage/async-storage",
+        "@react-native/*"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Peer dependencies pinned in pnpm-workspace.yaml's overrides to what the SDK works with: test-renderer 1.3.0 needs React 19.3, and @react-native/metro-config (already frozen above) must match react-native. Renovate reads those overrides; Dependabot never did, so without this rule the first run proposed test-renderer 1.3.0 into the monthly npm group. They move with the SDK.",
+      "matchPackageNames": ["test-renderer"],
+      "enabled": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "EAS installs its own pnpm, pinned in apps/mobile/eas.json, so the mobile build would keep the old pnpm after package.json's packageManager moved. Reading it here puts both pins in the same `pnpm` pull request.",
+      "managerFilePatterns": ["apps/mobile/eas.json"],
+      "matchStrings": ["\"pnpm\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "pnpm",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": "build.base.node in apps/mobile/eas.json carries the same exact patch as the Dockerfile's base tag, and until this preset no bot moved it. Read through the docker datasource, not node-version, so that it can only move to a version that also exists as the node image: both then land in the default preset's `node` pull request with the same number.",
+      "managerFilePatterns": ["apps/mobile/eas.json"],
+      "matchStrings": ["\"node\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "docker"
+    }
+  ]
+}
