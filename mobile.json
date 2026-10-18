@@ -39,7 +39,7 @@
         "@types/react-dom"
       ],
       "matchUpdateTypes": ["patch"],
-      "schedule": ["* * * * 1"],
+      "schedule": ["* 2-5 * * 1"],
       "automerge": true
     },
     {
@@ -47,7 +47,7 @@
       "matchPackageNames": ["expo-doctor"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "tooling",
-      "schedule": ["* * * * 1"],
+      "schedule": ["* 2-5 * * 1"],
       "automerge": true
     },
     {
