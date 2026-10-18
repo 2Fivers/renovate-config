@@ -5,13 +5,16 @@
     "The split that carries the design: TOOLING merges itself, everything else waits for a human. Tooling is the set below that `pnpm check` exercises in full -- if the linter, type checker, dead-code check and tests all run green on the new version, the change is proven by the same gate that proves any commit. Runtime dependencies are different: CI proves that they build and that the unit tests pass, not that the site works. So they stay manual, and they come once a month instead of every week.",
     "Where a project deploys on every push to main, an automerged pull request is a deploy. The safeguards are therefore what precedes the merge: every check green, the two-day minimumReleaseAge here, and pnpm's own minimumReleaseAge. Note that tooling does reach the build: typescript, @types/node and vitest are installed while the image is made and `next build` type-checks with typescript -- they do not end up in the served bundle, but they run while it is made.",
     "minimumReleaseAgeBehaviour is timestamp-optional because under the default, timestamp-required, an update whose release carries no timestamp is held as pending forever rather than aged. Here that is every SHA pin and digest bump of a GitHub Action, which would sit with renovate/stability-days 'Updates have not met minimum release age requirement' for that reason alone, so the monthly github actions group would quietly stop delivering. npm and Docker Hub releases carry timestamps and keep the two-day wait; Renovate logs a WARN for each release it lets through unaged.",
-    "Renovate merges by itself once the checks are green, so automerge needs neither a human click per pull request nor GitHub's own auto-merge."
+    "Renovate merges by itself once the checks are green, so automerge needs neither a human click per pull request nor GitHub's own auto-merge.",
+    "Renovate works at night: every schedule here is 02:00-06:00 Stockholm time, and so are automerges. The organisation's CI runs on two self-hosted slots, and in the daytime a burst of Renovate rebases queued a release behind six dependency pull requests. The window is four hours wide because Mend runs an active repository every four hours; a one-hour window would be missed on most nights. updateNotScheduled is false so that rebases stay inside the window too: outside it Renovate leaves its open branches alone, and a push to main during the day no longer rebases every open pull request. A branch that is wanted sooner is rebased by ticking its box in the pull request. Security fixes keep their own schedule and arrive at any hour (vulnerabilityAlerts below)."
   ],
   "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
   "timezone": "Europe/Stockholm",
   "semanticCommits": "disabled",
   "commitMessageLowerCase": "never",
-  "schedule": ["* * 1-7 * *"],
+  "schedule": ["* 2-5 1-7 * *"],
+  "updateNotScheduled": false,
+  "automergeSchedule": ["* 2-5 * * *"],
   "minimumReleaseAge": "2 days",
   "minimumReleaseAgeBehaviour": "timestamp-optional",
   "vulnerabilityAlerts": {
@@ -80,7 +83,7 @@
       ],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "tooling",
-      "schedule": ["* * * * 1"],
+      "schedule": ["* 2-5 * * 1"],
       "automerge": true
     },
     {

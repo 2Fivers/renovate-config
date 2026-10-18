@@ -31,6 +31,10 @@ names it:
   merges them.
 - **Majors** wait on the Dependency Dashboard issue until someone ticks them. The Node major is
   disabled; the Expo SDK family is frozen exactly as the SDK pins it.
+- **At night.** Every schedule above is 02:00-06:00 Stockholm time, and automerges and rebases
+  wait for the same window, so a day of pushes to `main` does not rebase every open pull
+  request onto the two CI slots. Four hours, because Mend runs an active repository every four
+  hours. Tick the rebase box in a pull request to have it now.
 - **Security fixes** arrive at once, outside the schedule and the release-age wait, labelled
   `security`, for a human to merge. Renovate reads the repository's Dependabot alerts for them.
   Dependabot's own security updates should be off in pnpm repositories: they leave
