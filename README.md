@@ -34,13 +34,21 @@ names it:
 - **At night.** Every schedule above is 02:00-06:00 Stockholm time, and automerges and rebases
   wait for the same window, so a day of pushes to `main` does not rebase every open pull
   request onto the two CI slots. Four hours, because Mend runs an active repository every four
-  hours. Tick the rebase box in a pull request to have it now.
+  hours. Tick the rebase box in a pull request to have it now. The lock file pull request below
+  is the exception: it is rebased whenever `main` moves.
 - **Security fixes** arrive at once, outside the schedule and the release-age wait, labelled
   `security`, and merge themselves once every check is green -- in the night window, like every
   other automerge. Merging deploys nothing; a published release does. Renovate reads the
-  repository's Dependabot alerts for them.
+  repository's Dependabot alerts and the OSV database for them, which covers direct
+  dependencies only.
   Dependabot's own security updates should be off in pnpm repositories: they leave
   `pnpm-lock.yaml` behind and fail `--frozen-lockfile` every time.
+- **Transitive dependencies** move every night: one `Lock file maintenance` pull request
+  regenerates `pnpm-lock.yaml` and merges itself once every check is green, in the next night
+  window. It is the only path a transitive fix has, because GitHub raises no alert for a
+  transitive package in a pnpm 12 lockfile. The wait in front of it is pnpm's own
+  `minimumReleaseAge` in `pnpm-workspace.yaml`. A project whose direct dependencies carry
+  ranges instead of exact pins turns it off in its `renovate.json`.
 
 Every rule carries its reason in its `description`. Change a rule here and every project
 follows on its next run.
