@@ -36,7 +36,9 @@ names it:
   request onto the two CI slots. Four hours, because Mend runs an active repository every four
   hours. Tick the rebase box in a pull request to have it now.
 - **Security fixes** arrive at once, outside the schedule and the release-age wait, labelled
-  `security`, for a human to merge. Renovate reads the repository's Dependabot alerts for them.
+  `security`, and merge themselves once every check is green -- in the night window, like every
+  other automerge. Merging deploys nothing; a published release does. Renovate reads the
+  repository's Dependabot alerts for them.
   Dependabot's own security updates should be off in pnpm repositories: they leave
   `pnpm-lock.yaml` behind and fail `--frozen-lockfile` every time.
 
