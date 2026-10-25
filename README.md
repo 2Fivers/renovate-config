@@ -36,11 +36,13 @@ names it:
   request onto the two CI slots. Four hours, because Mend runs an active repository every four
   hours. Tick the rebase box in a pull request to have it now. The lock file pull request below
   is the exception: it is rebased whenever `main` moves.
-- **Security fixes** arrive at once, outside the schedule and the release-age wait, labelled
-  `security`, and merge themselves once every check is green -- in the night window, like every
-  other automerge. Merging deploys nothing; a published release does. Renovate reads the
-  repository's Dependabot alerts and the OSV database for them, which covers direct
-  dependencies only.
+- **Security fixes** arrive outside the schedule, labelled `security`, once the fixed version
+  is two days old -- the same wait as every other update -- and merge themselves once every
+  check is green, in the night window like every other automerge. A fix that is wanted before
+  then is listed under *Pending Status Checks* on the Dependency Dashboard: tick it to get the
+  pull request now and merge it by hand. Merging deploys nothing; a published release does.
+  Renovate reads the repository's Dependabot alerts and the OSV database for them, which covers
+  direct dependencies only.
   Dependabot's own security updates should be off in pnpm repositories: they leave
   `pnpm-lock.yaml` behind and fail `--frozen-lockfile` every time.
 - **Transitive dependencies** move every night: one `Lock file maintenance` pull request
