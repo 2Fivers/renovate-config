@@ -25,7 +25,7 @@
       "groupName": "expo"
     },
     {
-      "description": "The cadence and automerge for the group above, on patches only: anything else in the family is disabled below, waits on the dashboard as a major, or is lifted out by the expo-doctor rule that follows. A group merges itself only when EVERY update in it may (Renovate's generateBranchConfig: `automerge = upgrades.every(u => u.automerge)`), so a minor that still lands here -- an @babel/core 7.x minor, which the SDK's ^7.29.0 accepts -- holds the patches with it until a human merges the pull request.",
+      "description": "The cadence and automerge for the group above, on patches only: anything else in the family is disabled below, waits on the dashboard as a major, or is lifted out by the expo-doctor rule that follows. A group merges itself only when EVERY update in it may (Renovate's generateBranchConfig: `automerge = upgrades.every(u => u.automerge)`), so a minor that still lands here -- an @babel/core 7.x minor, which the SDK's ^7.29.0 accepts -- holds the patches with it until a human merges the pull request. updateNotScheduled true and prPriority -1 for the same reason as the default preset's tooling rule: created on Monday night, rebased when main moves, merged on a later night after the lock file.",
       "matchPackageNames": [
         "expo",
         "expo-*",
@@ -40,14 +40,18 @@
       ],
       "matchUpdateTypes": ["patch"],
       "schedule": ["* 2-5 * * 1"],
+      "updateNotScheduled": true,
+      "prPriority": -1,
       "automerge": true
     },
     {
-      "description": "expo-doctor is a checker, not part of the SDK: it versions on its own (1.x, not 57.x), runs only in check-mobile and never ships, which is the default preset's definition of tooling. It matched expo-* above and so joined the expo group with every minor, and the patch-only automerge does not cover a minor -- one expo-doctor minor inside 'Update expo' would keep the whole group from merging itself. Here it joins the weekly, automerged tooling group instead. Its major stays disabled by the SDK rule below.",
+      "description": "expo-doctor is a checker, not part of the SDK: it versions on its own (1.x, not 57.x), runs only in check-mobile and never ships, which is the default preset's definition of tooling. It matched expo-* above and so joined the expo group with every minor, and the patch-only automerge does not cover a minor -- one expo-doctor minor inside 'Update expo' would keep the whole group from merging itself. Here it joins the weekly, automerged tooling group instead, with that rule's updateNotScheduled and prPriority as well: a group's branch takes them from its first update, and that can be this one. Its major stays disabled by the SDK rule below.",
       "matchPackageNames": ["expo-doctor"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "tooling",
       "schedule": ["* 2-5 * * 1"],
+      "updateNotScheduled": true,
+      "prPriority": -1,
       "automerge": true
     },
     {
