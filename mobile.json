@@ -7,7 +7,7 @@
   "extends": ["github>2Fivers/renovate-config"],
   "packageRules": [
     {
-      "description": "Patch releases inside the pinned SDK: the expo-* and @expo/* packages, and the react-native-* libraries the SDK pins with a `~` range, which tolerates them. WEEKLY AND AUTOMERGED, unlike the other runtime groups, because it keeps the app on the SDK's current fixes at no cost: the web image does not contain Expo, nothing reaches a phone without a mobile-v* tag, and check-mobile proves that the packages agree with the expo the same pull request brings. The exact-pinned names below never reach this group -- they are disabled -- and are listed anyway, so that an SDK bump, which lifts those rules for one commit, still reads as one family.",
+      "description": "Patch releases inside the pinned SDK: the expo-* and @expo/* packages, and the react-native-* libraries the SDK pins with a `~` range, which tolerates them. NIGHTLY AND AUTOMERGED, unlike the other runtime groups, because it keeps the app on the SDK's current fixes at no cost: the web image does not contain Expo, nothing reaches a phone without a mobile-v* tag, and check-mobile proves that the packages agree with the expo the same pull request brings. The exact-pinned names below never reach this group -- they are disabled -- and are listed anyway, so that an SDK bump, which lifts those rules for one commit, still reads as one family.",
       "matchPackageNames": [
         "expo",
         "expo-*",
@@ -25,7 +25,7 @@
       "groupName": "expo"
     },
     {
-      "description": "The cadence and automerge for the group above, on patches only: anything else in the family is disabled below, waits on the dashboard as a major, or is lifted out by the expo-doctor rule that follows. A group merges itself only when EVERY update in it may (Renovate's generateBranchConfig: `automerge = upgrades.every(u => u.automerge)`), so a minor that still lands here -- an @babel/core 7.x minor, which the SDK's ^7.29.0 accepts -- holds the patches with it until a human merges the pull request. updateNotScheduled true and prPriority -1 for the same reason as the default preset's tooling rule: created on Monday night, rebased when main moves, merged on a later night after the lock file.",
+      "description": "The cadence and automerge for the group above, on patches only: anything else in the family is disabled below, waits on the dashboard as a major, or is lifted out by the expo-doctor rule that follows. A group merges itself only when EVERY update in it may (Renovate's generateBranchConfig: `automerge = upgrades.every(u => u.automerge)`), so a minor that still lands here -- an @babel/core 7.x minor, which the SDK's ^7.29.0 accepts -- holds the patches with it until a human merges the pull request. EVERY NIGHT, not on Mondays with tooling, because the default preset's lock file maintenance moves the app's transitive expo-* packages every night: when Expo ships a patch in which a sibling module (expo-asset) requires a newer version of a module the app pins exactly (expo-constants), the lock file branch installs both versions and check-mobile fails on the duplicate until this group has moved the pin. pnpm's age limit is one day and Renovate's two, so the lock file is always a night ahead; on a weekly cadence it stayed red until the next Monday, and with it every transitive fix in the repository (homelab-docs ADR 0124). updateNotScheduled true and prPriority -1 for the same reason as the default preset's tooling rule: rebased when main moves, and sorted after the lock file branch, which a red check skips anyway.",
       "matchPackageNames": [
         "expo",
         "expo-*",
@@ -39,7 +39,7 @@
         "@types/react-dom"
       ],
       "matchUpdateTypes": ["patch"],
-      "schedule": ["* 2-5 * * 1"],
+      "schedule": ["* 2-5 * * *"],
       "updateNotScheduled": true,
       "prPriority": -1,
       "automerge": true
