@@ -31,10 +31,11 @@ names it:
   merges them.
 - **Majors** wait on the Dependency Dashboard issue until someone ticks them. The Node major is
   disabled; the Expo SDK family is frozen exactly as the SDK pins it.
-- **At night.** Every schedule above is 02:00-06:00 Stockholm time, and automerges and rebases
-  wait for the same window, so a day of pushes to `main` does not rebase every open pull
-  request onto the two CI slots. Four hours, because Mend runs an active repository every four
-  hours. Tick the rebase box in a pull request to have it now. The pull requests that merge
+- **At night.** Every schedule above is 02:00-06:00 Stockholm time, and rebases wait for the
+  same window, so a day of pushes to `main` does not rebase every open pull request onto the
+  two CI slots. Four hours, because Mend runs an active repository about every four hours.
+  Automerges run 01:00-07:00: "about" is a median, and a four-hour merge window missed a
+  repository on nights a six-hour one would not have. Tick the rebase box in a pull request to have it now. The pull requests that merge
   themselves are the exception: the weekly `tooling` and `expo` groups and the lock file pull
   request below are rebased whenever `main` moves, and merge in a later night. One merges per
   project and night: security fixes first, then the lock file, then the weekly groups.
